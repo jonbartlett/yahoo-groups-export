@@ -1,61 +1,76 @@
-require 'mechanize'
-require 'json'
+require './lib/yahoo-group'
+
 require 'pry'
-require 'mail'
+require 'yaml'
+require 'mongo'
 
-mechanize = Mechanize.new
+config = YAML.load_file('.config.yaml')
 
-page = mechanize.get('https://login.yahoo.com')
+client = Mongo::Client.new([ '127.0.0.1:27017'], :database => 'syncro')
+db = client.database
 
-form = page.forms.first
+collection = client[:posts]
+missing_collection = client[:missing_posts]
 
-form['username'] = ''
-form['passwd'] = ''
+connection = YahooGroup::Connection.new
+group = YahooGroup::Group.new(connection)
 
-page = form.submit
-
-# Get last message to determine max message id (message count)
-last_post = mechanize.get('https://groups.yahoo.com/api/v1/groups/Syncro_T3_Australia/messages?count=1&sortOrder=desc&direction=-1')
-
-totalPosts = JSON.parse(last_post.body)["ygData"]["totalRecords"]
-
-if totalPosts > 0
+total_record_count = group.message_count
+config['exporter']['total_record_count'] = total_record_count
 
 
-
-end if
-
-# multi-part base64 encoded
-#raw_msg = mechanize.get('https://groups.yahoo.com/api/v1/groups/Syncro_T3_Australia/messages/26738/raw')
-
-# single-part base64 encoded
-# raw_msg = mechanize.get('https://groups.yahoo.com/api/v1/groups/Syncro_T3_Australia/messages/26736/raw')
-
-#
-#raw_msg = mechanize.get('https://groups.yahoo.com/api/v1/groups/Syncro_T3_Australia/messages/1/raw')
-
-raw_msg = mechanize.get('https://groups.yahoo.com/api/v1/groups/Syncro_T3_Australia/messages/26739/raw')
-
-
-msg_json = JSON.parse(raw_msg.body)
-
-email = Mail.new(msg_json["ygData"]["rawEmail"])
-
-binding.pry
-
-email.body.split!('9nlWnTS9ocNmxdhsK3FKVLWiM6a5jwOaA8HvrLV')
-
-if email.body.multipart?
-
- puts email.body.parts[0].decoded
-
+if config['exporter']['last_record_exported'].nil?
+  current_record = 1
 else
+  current_record = config['exporter']['last_record_exported'] + 1
+end
 
- puts email.body.decoded
+#last_msg_exported = config['exporter']['last_record_exported']
 
-end if
+if total_record_count > 0
+
+  while current_record <= total_record_count
+    begin
+
+      puts "record#: #{current_record}"
+
+      begin
+
+        msg = YahooGroup::Message.new(connection, current_record)
+        result = collection.insert_one(msg.raw_msg)
+        puts result
+
+      rescue Mechanize::ResponseCodeError # Net::HTTPNotFound
+
+        doc = { id: "#{current_record}", exception: "#{$!}" }
+        missing_collection.insert_one(doc)
+        puts "#{$!}"
+
+      end
+
+      config['exporter']['last_record_exported'] = current_record
+
+#      break if current_record == 5000
+
+      current_record += 1
 
 
-binding.pry
+    rescue Exception => error
+
+      puts error
+      binding.pry
+      break
+
+    end
+
+  end
+
+end
+
+
+File.open(".config.yaml", "r+") do |f|
+  f.write(config.to_yaml)
+end
+
 
 
