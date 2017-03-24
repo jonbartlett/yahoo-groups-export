@@ -16,6 +16,7 @@ connection = YahooGroup::Connection.new
 group = YahooGroup::Group.new(connection)
 
 total_record_count = group.message_count
+puts total_record_count
 config['exporter']['total_record_count'] = total_record_count
 
 
