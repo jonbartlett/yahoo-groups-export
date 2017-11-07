@@ -1,0 +1,11 @@
+---
+yahoo:
+  api_url: https://groups.yahoo.com/api/v1/groups
+  group_name:
+  group_private: true
+  username:
+  password:
+exporter:
+  last_run_date:
+  last_record_exported:
+  total_record_count:
