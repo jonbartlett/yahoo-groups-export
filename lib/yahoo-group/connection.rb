@@ -17,11 +17,25 @@ module YahooGroup
     end
 
     def login(username, password)
+
       login_page = self.get('https://login.yahoo.com')
       login_form = login_page.forms.first
       login_form['username'] = username
-      login_form['passwd'] = password
-      login_page = login_form.submit
+      sleep 2
+      next_page = login_form.submit
+
+      next_form = next_page.forms.first
+      next_form['password'] = password
+      verify_button = next_form.buttons_with(:name => 'verifyPassword').first
+      sleep 2
+      logged_in_page = self.submit(next_form, verify_button)
+
+      if (next1_page.links_with(:text => 'Sign up').empty?)
+        raise 'Could not log in.....'
+      end if
+
+      puts 'Logged in....'
+
     end
 
   end

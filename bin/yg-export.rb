@@ -1,6 +1,5 @@
 require './lib/yahoo-group'
 
-require 'pry'
 require 'yaml'
 require 'mongo'
 
@@ -19,14 +18,11 @@ total_record_count = group.message_count
 puts total_record_count
 config['exporter']['total_record_count'] = total_record_count
 
-
 if config['exporter']['last_record_exported'].nil?
   current_record = 1
 else
   current_record = config['exporter']['last_record_exported'] + 1
 end
-
-#last_msg_exported = config['exporter']['last_record_exported']
 
 if total_record_count > 0
 
@@ -51,15 +47,11 @@ if total_record_count > 0
 
       config['exporter']['last_record_exported'] = current_record
 
-#      break if current_record == 5000
-
       current_record += 1
-
 
     rescue Exception => error
 
       puts error
-      binding.pry
       break
 
     end
