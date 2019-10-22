@@ -8,6 +8,8 @@ module YahooGroup
     def initialize
       super
 
+      self.user_agent_alias = 'Mac Safari'
+
       config = YAML.load_file('.config.yaml')
 
       if config["yahoo"]["group_private"] = "true"
