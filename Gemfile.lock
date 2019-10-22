@@ -9,7 +9,7 @@ GEM
       safe_yaml (~> 1.0.0)
     domain_name (0.5.20161129)
       unf (>= 0.0.5, < 1.0.0)
-    ffi (1.9.14)
+    ffi (1.11.1)
     formatador (0.2.5)
     guard (2.14.0)
       formatador (>= 0.2.4)
@@ -33,8 +33,6 @@ GEM
       rb-inotify (~> 0.9, >= 0.9.7)
       ruby_dep (~> 1.2)
     lumberjack (1.0.10)
-    mail (2.6.4)
-      mime-types (>= 1.16, < 4)
     mechanize (2.7.5)
       domain_name (~> 0.5, >= 0.5.1)
       http-cookie (~> 1.0)
@@ -91,7 +89,6 @@ DEPENDENCIES
   guard
   guard-minitest
   json
-  mail
   mechanize
   minitest
   mongo
